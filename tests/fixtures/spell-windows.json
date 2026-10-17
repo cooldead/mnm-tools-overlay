@@ -1,0 +1,272 @@
+[
+ {
+  "title": "SNEAK",
+  "lines": [
+   {
+    "text": "W alk silently, rendering you undetectable to targets while behind",
+    "conf": 85
+   },
+   {
+    "text": "them.",
+    "conf": 77
+   },
+   {
+    "text": "Subterfuge Ability",
+    "conf": 92
+   },
+   {
+    "text": "Innate",
+    "conf": 91
+   },
+   {
+    "text": "Cast Time: Instant",
+    "conf": 91
+   },
+   {
+    "text": "Cooldown: 10.0 seconds",
+    "conf": 92
+   },
+   {
+    "text": "Does Not Trigger Global Cooldown",
+    "conf": 92
+   },
+   {
+    "text": "You cannot cast this.",
+    "conf": 90
+   },
+   {
+    "text": "Cannot Fizzle",
+    "conf": 92
+   },
+   {
+    "text": "Can Cact Whila Mavinag",
+    "conf": 50
+   }
+  ]
+ },
+ {
+  "title": "SNEAK",
+  "lines": [
+   {
+    "text": "Subtertuge Ability",
+    "conf": 90
+   },
+   {
+    "text": "Innate",
+    "conf": 92
+   },
+   {
+    "text": "Cast Time: Instant",
+    "conf": 91
+   },
+   {
+    "text": "Cooldown: 10.0 seconds",
+    "conf": 92
+   },
+   {
+    "text": "Does Not Trigger Global Cooldown",
+    "conf": 92
+   },
+   {
+    "text": "You cannot cast this.",
+    "conf": 92
+   },
+   {
+    "text": "Cannot Fizzle",
+    "conf": 92
+   },
+   {
+    "text": "Can Cast While Moving",
+    "conf": 91
+   },
+   {
+    "text": "Resist Element: None",
+    "conf": 91
+   },
+   {
+    "text": "AQOE Type: Single Target",
+    "conf": 75
+   }
+  ]
+ },
+ {
+  "title": "BESTIAL BOND",
+  "lines": [
+   {
+    "text": "Appeal to the senses of a target beast, bonding it to your side.",
+    "conf": 91
+   },
+   {
+    "text": "Alteration Ability",
+    "conf": 92
+   },
+   {
+    "text": "Innate",
+    "conf": 92
+   },
+   {
+    "text": "Mana Cost: 25",
+    "conf": 93
+   },
+   {
+    "text": "Cast Time: Instant",
+    "conf": 92
+   },
+   {
+    "text": "Cooldown: 10.0 seconds",
+    "conf": 92
+   },
+   {
+    "text": "Triggers Spell Global Cooldown",
+    "conf": 92
+   },
+   {
+    "text": "Range: 5 meters",
+    "conf": 92
+   },
+   {
+    "text": "Requires Line of Sight",
+    "conf": 92
+   },
+   {
+    "text": "Rannirad I aval 1",
+    "conf": 70
+   }
+  ]
+ },
+ {
+  "title": "BESTIAL BOND",
+  "lines": [
+   {
+    "text": "Cast 11me: Instant",
+    "conf": 74
+   },
+   {
+    "text": "Cooldown: 10.0 seconds",
+    "conf": 92
+   },
+   {
+    "text": "Triggers Spell Global Cooldown",
+    "conf": 92
+   },
+   {
+    "text": "Range: 5 meters",
+    "conf": 92
+   },
+   {
+    "text": "Requires Line of Sight",
+    "conf": 92
+   },
+   {
+    "text": "Required Level: 1",
+    "conf": 93
+   },
+   {
+    "text": "Cannot Fizzle",
+    "conf": 92
+   },
+   {
+    "text": "Can Cast While Moving",
+    "conf": 91
+   },
+   {
+    "text": "Resist Element: Magic",
+    "conf": 91
+   },
+   {
+    "text": "AQOE Type: Single Target",
+    "conf": 74
+   }
+  ]
+ },
+ {
+  "title": "GUARDIAN SPIRIT",
+  "lines": [
+   {
+    "text": "Invoke your pet's guardian spirit, reducing their Physical Damage",
+    "conf": 89
+   },
+   {
+    "text": "received by 10% and increasing their Threat generation by 25% for 1",
+    "conf": 93
+   },
+   {
+    "text": "hour.",
+    "conf": 89
+   },
+   {
+    "text": "Alteration Ability",
+    "conf": 92
+   },
+   {
+    "text": "Innate",
+    "conf": 92
+   },
+   {
+    "text": "Mana Cost: 10",
+    "conf": 93
+   },
+   {
+    "text": "Cast Time: 2 seconds",
+    "conf": 92
+   },
+   {
+    "text": "Triggers Spell Global Cooldown",
+    "conf": 91
+   },
+   {
+    "text": "Range: 20 meters",
+    "conf": 92
+   },
+   {
+    "text": "Ronnirac I ina nf Qinhe",
+    "conf": 52
+   }
+  ]
+ },
+ {
+  "title": "GUARDIAN SPIRIT",
+  "lines": [
+   {
+    "text": "Alteration Ability",
+    "conf": 45
+   },
+   {
+    "text": "Innate",
+    "conf": 89
+   },
+   {
+    "text": "Mana Cost: 10",
+    "conf": 93
+   },
+   {
+    "text": "Cast Time: 2 seconds",
+    "conf": 91
+   },
+   {
+    "text": "Triggers Spell Global Cooldown",
+    "conf": 92
+   },
+   {
+    "text": "Range: 20 meters",
+    "conf": 92
+   },
+   {
+    "text": "Requires Line of Sight",
+    "conf": 92
+   },
+   {
+    "text": "Required Level: 4",
+    "conf": 94
+   },
+   {
+    "text": "Resist Element: None",
+    "conf": 91
+   },
+   {
+    "text": "AOQOE Type: Single Target",
+    "conf": 81
+   }
+  ]
+ }
+]

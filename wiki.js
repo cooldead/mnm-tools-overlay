@@ -87,6 +87,98 @@ function parseSpell(wikitext) {
   };
 }
 
+// ---- Class pages ----
+// Each class page ("Beastmaster", "Cleric"…) lists the class's current abilities under "==Level N==" headings,
+// either as {{SpellRow|name=…}} templates or as wikitable rows ("| Name || Description || …"). These pages are
+// kept up to date (class reworks land there first), while many spell pages still name classes that lost the
+// spell, so a class page decides which abilities a class has and at what level.
+const CLASSES = ['Archer', 'Bard', 'Beastmaster', 'Cleric', 'Druid', 'Elementalist', 'Enchanter', 'Fighter', 'Inquisitor',
+  'Monk', 'Necromancer', 'Paladin', 'Ranger', 'Rogue', 'Shadow Knight', 'Shaman', 'Spellblade', 'Wizard'];
+const MIN_CLASS_ABILITIES = 10; // fewer than this means the page wasn't understood, so spell pages are used instead
+
+// The abilities section: the first top-level heading naming spells, songs or abilities, up to the next
+// top-level heading ("=Skills="). A stray "={{SpellRow" line is a typo, not a heading.
+function abilitySection(text) {
+  const lines = String(text).split('\n');
+  const start = lines.findIndex((l) => /^=\s*[^={].*\b(spells|songs|abilities)\b/i.test(l) && !/^==/.test(l));
+  if (start < 0) return '';
+  let end = lines.findIndex((l, i) => i > start && /^=\s*[^={]/.test(l) && !/^==/.test(l));
+  if (end < 0) end = lines.length;
+  return lines.slice(start + 1, end).join('\n');
+}
+
+// [{name, level, description, cast}] in page order; a name listed twice keeps its first (lowest) level.
+function parseClassPage(text) {
+  const out = [], seen = new Set();
+  const add = (name, level, description = '', castText = '') => {
+    name = plain(name).replace(/\s*\(.*\)$/, '').trim();
+    const key = nameKey(name);
+    if (!name || !level || seen.has(key)) return;
+    seen.add(key);
+    out.push({ name, level, description: plain(description).slice(0, 300), cast: parseSeconds(castText) });
+  };
+  const parts = abilitySection(text).split(/^==\s*Level\s*(\d+)\s*==\s*$/im);
+  for (let i = 1; i < parts.length; i += 2) {
+    const level = +parts[i], body = parts[i + 1];
+    for (const m of body.matchAll(/\{\{\s*SpellRow([\s\S]*?)\n?\}\}/gi)) {
+      const p = templateParams(m[1].replace(/\s*$/, '\n'));
+      add(p.name, level, p.description, p.casttime);
+    }
+    for (const line of body.split('\n')) {
+      if (!/^\|[^-}+]/.test(line) || !line.includes('||')) continue;
+      const [name, description] = line.slice(1).split('||');
+      add(name, level, description);
+    }
+  }
+  return out;
+}
+
+// Names compared loosely: case, curly apostrophes and spacing don't matter.
+const nameKey = (name) => String(name).toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, ' ').trim();
+
+// Puts the class pages' lists onto the spells read from spell pages. For each class whose page was understood,
+// the class page replaces what spell pages say about that class: its abilities get the class page's level and
+// description, spell pages that still claim the class lose it, and abilities with no spell page are added
+// (no icon, no recast: those only come from spell pages). Races keep what spell pages say.
+function applyClassPages(spells, classPages) {
+  const byName = new Map();
+  const index = (key, spell) => { if (!byName.has(key)) byName.set(key, spell); };
+  for (const spell of spells) index(nameKey(spell.page), spell);
+  for (const spell of spells) index(nameKey(spell.name), spell);
+  const find = (name) => {
+    const key = nameKey(name);
+    // "Enraging Strike I" may be the page "Enraging Strike", and "Chop" the page "Chop I".
+    return byName.get(key) || (/ i$/.test(key) ? byName.get(key.slice(0, -2)) : byName.get(key + ' i'));
+  };
+  const used = {};
+  for (const [cls, list] of Object.entries(classPages)) {
+    if (list.length < MIN_CLASS_ABILITIES) continue;
+    used[cls] = list.length;
+    for (const spell of spells) delete spell.classes[cls];
+    for (const entry of list) {
+      let spell = find(entry.name);
+      if (!spell) {
+        spell = { name: entry.name, classes: {}, description: '', type: '', cast: null, recast: null, recastText: '',
+          duration: null, durationText: '', gcd: null, page: entry.name, classPageOnly: true, icon: '' };
+        spells.push(spell);
+        index(nameKey(entry.name), spell);
+      }
+      if (!(spell.classes[cls] <= entry.level)) spell.classes[cls] = entry.level;
+      if (entry.description && (spell.classPageOnly || !spell.description)) spell.description = entry.description;
+      if (spell.cast == null && entry.cast != null) spell.cast = entry.cast;
+    }
+  }
+  // A new rank with no page of its own ("Maul IV") shows its spell line's icon; its recast stays unknown.
+  const line = (name) => nameKey(name).replace(/ ([ivx]+|\d+)$/, '');
+  const lineIcons = new Map();
+  for (const spell of spells) if (spell.icon && !spell.classPageOnly && !lineIcons.has(line(spell.page))) lineIcons.set(line(spell.page), spell);
+  for (const spell of spells) {
+    const from = spell.classPageOnly && !spell.icon && lineIcons.get(line(spell.name));
+    if (from) Object.assign(spell, { icon: from.icon, iconFile: from.iconFile });
+  }
+  return used;
+}
+
 // "Blast_of_water.png" -> "blast of water", the key used to match the bundled icon catalog's wikiName.
 const fileKey = (file) => file.replace(/^File:/i, '').replace(/\.[a-z]+$/i, '').replace(/_/g, ' ').trim().toLowerCase();
 
@@ -194,8 +286,15 @@ async function updateSpells({ catalog = [], known = [], iconDir, iconRef, onProg
     }
   }
 
+  onProgress({ step: 'Reading class pages…' });
+  const classPages = {};
+  const pages = await fetchBatch(CLASSES);
+  for (const cls of CLASSES) classPages[cls] = parseClassPage(pages[cls]?.text || '');
+  const classPagesUsed = applyClassPages(spells, classPages);
+
   spells.sort((a, b) => a.name.localeCompare(b.name));
-  return { generatedAt: new Date().toISOString(), source: API.replace('/w/api.php', ''), iconsDownloaded: downloaded, iconsFailed: failed, spells };
+  return { generatedAt: new Date().toISOString(), source: API.replace('/w/api.php', ''), iconsDownloaded: downloaded, iconsFailed: failed,
+    classPagesUsed, spells };
 }
 
-module.exports = { updateSpells, parseSpell, parseSeconds, templateParams, fileKey, pickIcon };
+module.exports = { updateSpells, parseSpell, parseSeconds, templateParams, fileKey, pickIcon, parseClassPage, applyClassPages, CLASSES };

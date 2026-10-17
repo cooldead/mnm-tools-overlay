@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 contextBridge.exposeInMainWorld('mnm', {
   iconsBase: new URLSearchParams(location.search).get('icons'),
@@ -54,4 +54,25 @@ contextBridge.exposeInMainWorld('mnm', {
   setQuestOverlay: (on, openWindow) => ipcRenderer.invoke('quest-overlay', on, openWindow),
   onQuestOverlay: (callback) => ipcRenderer.on('quest-overlay', (event, message) => callback(message)),
   onSpellsProgress: (callback) => ipcRenderer.on('spells-progress', (event, progress) => callback(progress)),
+  // Wiki helper window
+  openWikiHelper: () => ipcRenderer.invoke('open-wiki-helper'),
+  wikiHelper: {
+    init: () => ipcRenderer.invoke('wh-init'),
+    ready: () => ipcRenderer.send('wh-ready'),
+    choose: () => ipcRenderer.invoke('wh-choose'),
+    chooseFolder: () => ipcRenderer.invoke('wh-folder'),
+    watch: (on) => ipcRenderer.invoke('wh-watch', on),
+    onFiles: (callback) => ipcRenderer.on('wh-files', (event, files) => callback(files)),
+    onWatchError: (callback) => ipcRenderer.on('wh-watch-error', (event, error) => callback(error)),
+    read: (files) => ipcRenderer.invoke('wh-read', files),
+    page: (title) => ipcRenderer.invoke('wh-page', title),
+    login: (details) => ipcRenderer.invoke('wh-login', details),
+    logout: () => ipcRenderer.invoke('wh-logout'),
+    publish: (edit) => ipcRenderer.invoke('wh-publish', edit),
+    open: (title, editing) => ipcRenderer.invoke('wh-open', title, editing),
+    pathFor: (file) => webUtils.getPathForFile(file),
+    call: (name, ...args) => ipcRenderer.invoke('wh-shot', name, ...args),
+    saveIcon: (name, base64) => ipcRenderer.invoke('wh-save-icon', name, base64),
+    upload: (details) => ipcRenderer.invoke('wh-upload', details),
+  },
 });

@@ -1,7 +1,7 @@
 {
   "name": "mnm-tools",
   "productName": "MnM Tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Overlays for Monsters & Memories: ability cooldowns started by your own hotbar keypresses, quest tracker, game clock and MnM Atlas maps",
   "main": "main.js",

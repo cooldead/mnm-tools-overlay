@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, Tray, Notification, ipcMain, screen, dialog, nativeImage, clipboard, shell, session } = require('electron');
+const { app, BrowserWindow, Menu, Tray, Notification, ipcMain, screen, dialog, nativeImage, clipboard, shell, session, safeStorage } = require('electron');
 const { randomUUID } = require('crypto');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -9,6 +9,8 @@ const core = require('./core');
 const wiki = require('./wiki');
 const questWiki = require('./quests');
 const wikiMaps = require('./wikimaps');
+const wikiEdit = require('./wikiedit');
+const spellshot = require('./spellshot');
 const store = require('./store');
 
 // Wayland doesn't let apps place their own windows or keep them on top, and the key watcher needs X11,
@@ -54,9 +56,10 @@ const DEFAULTS = { abilities: [], layout: 'horizontal', size: 'Medium', ready: '
   minimap: false, minimapShape: 'round', minimapOpacity: 0.9, useKey: null, minimapZoomInKey: null, minimapZoomOutKey: null, minimapFollowZone: true, minimapHideWhileLoading: true, minimapMouse: true,
   minimapBounds: null, minimapMap: 'world', minimapViews: {}, atlasMap: '', atlasViews: {}, atlasBounds: null,
   atlasFollowZone: true, minimapSource: 'atlas', mapsSource: 'atlas', wikiMap: '', wikiViews: {}, wikiZoneMaps: {},
-  questOverlay: false, questOpacity: 0.85, questTextScale: 1, questOverlayBounds: null };
+  questOverlay: false, questOpacity: 0.85, questTextScale: 1, questOverlayBounds: null,
+  wikiHelperWatch: false, wikiHelperFolder: '', wikiHelperBounds: null };
 
-let overlay, followWin, counterWin, clockWin, framesWin, settingsWin, questsWin, minimapWin, mapsWin, tray, settings, watcherChild, moving = false;
+let overlay, followWin, counterWin, clockWin, framesWin, settingsWin, questsWin, minimapWin, mapsWin, wikiHelperWin, tray, settings, watcherChild, moving = false;
 let watcher = { status: 'starting', message: 'Starting the key watcher…' };
 let profileStamp = 0, loggedIn = null; // profileStamp tells the settings window to reload after a switch
 let recording = null; // {resolve, timer} while the settings window waits for a key
@@ -855,8 +858,7 @@ ipcMain.handle('spells', () => loadSpells());
 
 // ---- Importing abilities for a class and level ----
 // Playable classes; anything else the wiki lists abilities for (Dwarf, Goblin, Halfling…) is a race.
-const CLASSES = ['Archer', 'Bard', 'Beastmaster', 'Cleric', 'Druid', 'Elementalist', 'Enchanter', 'Fighter', 'Inquisitor',
-  'Monk', 'Necromancer', 'Paladin', 'Ranger', 'Rogue', 'Shadow Knight', 'Shaman', 'Spellblade', 'Wizard'];
+const CLASSES = wiki.CLASSES;
 
 ipcMain.handle('plan-import', (event, character) => {
   const { spells, generatedAt } = loadSpells();
@@ -947,6 +949,178 @@ function openQuests() {
   questsWin.webContents.on('did-finish-load', () => broadcast());
   questsWin.loadFile('renderer/quests.html');
 }
+
+// ---- Wiki helper ----
+// Reads spell window screenshots (spellshot.py runs Tesseract on them) and helps turn them into wiki edits.
+// The window shows every change before it is made; Publish sends one edit under the user's own wiki account.
+const SPELLSHOT = path.join(__dirname, 'spellshot.py');
+const wikiClient = new wikiEdit.WikiClient();
+const loginFile = () => path.join(app.getPath('userData'), 'wiki-login.bin');
+let shotWatcher = null;
+
+function openWikiHelper() {
+  if (wikiHelperWin && !wikiHelperWin.isDestroyed()) return wikiHelperWin.show(), wikiHelperWin.focus();
+  const saved = settings.wikiHelperBounds;
+  const onScreen = saved && screen.getAllDisplays().some(({ bounds: b }) =>
+    saved.x < b.x + b.width && saved.x + saved.width > b.x && saved.y < b.y + b.height && saved.y + saved.height > b.y);
+  wikiHelperWin = new BrowserWindow({
+    ...(onScreen ? saved : { width: 1000, height: 820 }), minWidth: 640, minHeight: 420,
+    title: 'MnM Tools — Wiki helper',
+    icon: path.join(__dirname, 'assets', 'icon.png'),
+    backgroundColor: '#1b1a16',
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true },
+  });
+  wikiHelperWin.setMenuBarVisibility(false);
+  const remember = () => { if (wikiHelperWin && !wikiHelperWin.isDestroyed()) { settings.wikiHelperBounds = wikiHelperWin.getBounds(); saveSettings(); } };
+  let timer = null;
+  for (const e of ['move', 'resize']) wikiHelperWin.on(e, () => { clearTimeout(timer); timer = setTimeout(remember, 500); });
+  wikiHelperWin.on('close', remember);
+  wikiHelperWin.on('closed', () => { wikiHelperWin = null; watchShots(false); });
+  wikiHelperWin.loadFile('renderer/wikihelper.html', { query: { icons: pathToFileURL(ICONS_DIR).href } });
+}
+
+const shotFolder = () => settings.wikiHelperFolder || path.join(app.getPath('pictures'), 'Screenshots');
+
+// New screenshots in the folder are offered to the window as they appear (the window skips ones that
+// aren't spell windows). Only while the window is open.
+function watchShots(on) {
+  if (shotWatcher) { shotWatcher.close(); shotWatcher = null; }
+  if (!on) return null;
+  const folder = shotFolder();
+  try {
+    const seen = new Set(fs.readdirSync(folder));
+    const pending = new Map();
+    shotWatcher = fs.watch(folder, (type, name) => {
+      if (!name || !/\.(png|jpe?g|webp)$/i.test(name) || seen.has(name)) return;
+      clearTimeout(pending.get(name));
+      pending.set(name, setTimeout(() => { // wait until the screenshot tool has finished writing it
+        pending.delete(name);
+        const file = path.join(folder, name);
+        if (!fs.existsSync(file)) return;
+        seen.add(name);
+        wikiHelperWin?.webContents.send('wh-files', [file]);
+      }, 800));
+    });
+    return null;
+  } catch (error) {
+    return error.message;
+  }
+}
+
+function readShots(files) {
+  return new Promise((resolve) => {
+    const child = spawn('python3', [SPELLSHOT, '--icons', ICONS_DIR, ...files], { stdio: ['ignore', 'pipe', 'pipe'] });
+    let out = '', err = '';
+    child.stdout.setEncoding('utf8').on('data', (text) => { out += text; });
+    child.stderr.setEncoding('utf8').on('data', (text) => { err += text; });
+    child.on('error', (error) => resolve({ error: 'Could not start python3: ' + error.message }));
+    child.on('close', () => {
+      const results = out.trim().split('\n').filter(Boolean).map((line) => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean);
+      resolve(results.length ? { results } : { error: err.trim().split('\n').pop() || 'Could not read the screenshots' });
+    });
+  });
+}
+
+// Passwords are only kept when the desktop's keyring encrypts them (not Electron's plain-text fallback).
+const canKeepLogin = () => safeStorage.isEncryptionAvailable() && safeStorage.getSelectedStorageBackend?.() !== 'basic_text';
+
+function savedLogin() {
+  try {
+    if (!safeStorage.isEncryptionAvailable() || !fs.existsSync(loginFile())) return null;
+    return JSON.parse(safeStorage.decryptString(fs.readFileSync(loginFile())));
+  } catch { return null; }
+}
+
+async function ensureLogin() {
+  if (wikiClient.user) return wikiClient.user;
+  const login = savedLogin();
+  if (!login) throw new Error('Log in to the wiki first');
+  return wikiClient.login(login.name, login.password);
+}
+
+ipcMain.handle('wh-init', () => {
+  const { spells } = loadSpells();
+  return {
+    names: [...new Set(spells.map((s) => s.name))],
+    spells: spells.map(({ name, page, icon, iconFile, description, classPageOnly }) => ({ name, page, icon, iconFile, description, classPageOnly })),
+    icons: catalogIcons().filter((i) => i.wikiName),
+    classes: wiki.CLASSES,
+    cls: settings.character?.cls || '',
+    watch: settings.wikiHelperWatch, folder: shotFolder(),
+    user: wikiClient.user, savedLogin: !!savedLogin()?.name, canKeepLogin: canKeepLogin(),
+  };
+});
+ipcMain.handle('wh-choose', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(wikiHelperWin, {
+    title: 'Spell window screenshots', defaultPath: shotFolder(), properties: ['openFile', 'multiSelections'],
+    filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp'] }],
+  });
+  return canceled ? [] : filePaths;
+});
+ipcMain.handle('wh-folder', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(wikiHelperWin, { title: 'Screenshots folder', defaultPath: shotFolder(), properties: ['openDirectory'] });
+  if (canceled || !filePaths[0]) return null;
+  settings.wikiHelperFolder = filePaths[0];
+  saveSettings();
+  if (settings.wikiHelperWatch) watchShots(true);
+  return filePaths[0];
+});
+ipcMain.handle('wh-watch', (event, on) => {
+  settings.wikiHelperWatch = !!on;
+  saveSettings();
+  return { error: watchShots(!!on) };
+});
+// The helper's logic (spellshot.js) runs here; the window calls it by name.
+const SHOT_CALLS = new Set(['joinParts', 'readSpell', 'spellFields', 'compareFields', 'pageFields', 'setFields', 'withClass', 'newSpellPage',
+  'classCategory', 'classStatus', 'classRow', 'addClassRow', 'spellName', 'likelyPage']);
+ipcMain.handle('wh-shot', (event, name, ...args) => {
+  if (!SHOT_CALLS.has(name)) return { error: 'Unknown call' };
+  try { return { value: spellshot[name](...args) }; } catch (error) { return { error: error.message }; }
+});
+ipcMain.handle('wh-read', (event, files) => readShots(files.map(String).filter((f) => fs.existsSync(f))));
+ipcMain.handle('wh-page', (event, title) => wikiClient.page(String(title)).catch((error) => ({ error: error.message })));
+ipcMain.handle('wh-login', async (event, { name, password, remember }) => {
+  try {
+    const user = await wikiClient.login(String(name), String(password));
+    if (remember && canKeepLogin()) store.writeAtomic(loginFile(), safeStorage.encryptString(JSON.stringify({ name, password })));
+    return { user };
+  } catch (error) { return { error: error.message }; }
+});
+ipcMain.handle('wh-logout', () => {
+  wikiClient.user = null;
+  wikiClient.cookies.clear();
+  fs.rmSync(loginFile(), { force: true });
+  return true;
+});
+ipcMain.handle('wh-publish', async (event, edit) => {
+  try {
+    await ensureLogin();
+    return await wikiClient.edit({ title: String(edit.title), text: String(edit.text), summary: String(edit.summary), base: edit.base });
+  } catch (error) { return { error: error.message }; }
+});
+// Saves a spellbook icon as a PNG, for uploading to the wiki by hand.
+ipcMain.handle('wh-save-icon', async (event, name, base64) => {
+  const { canceled, filePath } = await dialog.showSaveDialog(wikiHelperWin, {
+    title: 'Save the icon', defaultPath: path.join(app.getPath('pictures'), String(name).replace(/[\\/:*?"<>|]+/g, ' ').trim() + '.png'),
+    filters: [{ name: 'PNG image', extensions: ['png'] }],
+  });
+  if (canceled || !filePath) return null;
+  fs.writeFileSync(filePath, Buffer.from(String(base64), 'base64'));
+  return filePath;
+});
+ipcMain.handle('wh-upload', async (event, { filename, base64 }) => {
+  try {
+    await ensureLogin();
+    const name = String(filename).trim();
+    if (!/\.png$/i.test(name)) throw new Error('The file name must end in .png');
+    return await wikiClient.upload({ filename: name, data: Buffer.from(String(base64), 'base64'), text: '[[Category:Spell Icons]]',
+      comment: 'Spell icon from the in-game spellbook (MnM Tools Wiki helper)' });
+  } catch (error) { return { error: error.message }; }
+});
+// Only wiki pages open from this window.
+ipcMain.handle('wh-open', (event, title, editing) => shell.openExternal(editing ? wikiEdit.editUrl(String(title)) : wikiEdit.pageUrl(String(title))));
+ipcMain.handle('open-wiki-helper', () => openWikiHelper());
+ipcMain.on('wh-ready', () => { if (settings.wikiHelperWatch) { const error = watchShots(true); if (error) wikiHelperWin?.webContents.send('wh-watch-error', error); } });
 
 // ---- Quest log overlay ----
 // The same tracker as a see-through, click-through panel over the game. Use the minimap key (or the tray) to
@@ -1194,6 +1368,7 @@ function updateTray() {
     ] },
     { label: 'Check for new abilities…', click: () => openSettings(true) },
     { label: 'Quest tracker…', click: () => openQuests() },
+    { label: 'Wiki helper (spell screenshots)…', click: () => openWikiHelper() },
     { label: 'Move overlays (drag them, then untick)', type: 'checkbox', checked: moving, click: (item) => setMoving(item.checked) },
     { label: 'Show game clock', type: 'checkbox', checked: !!settings?.clock, click: (item) => setClock(item.checked) },
     { type: 'separator' },

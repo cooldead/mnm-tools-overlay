@@ -137,8 +137,14 @@ Nothing changes until **Add selected**. **Update from wiki** in the dialog refre
 
 **+ Add from wiki** lists every spell and ability on the
 [Monsters & Memories wiki](https://monstersandmemories.miraheze.org/wiki/Category:Spells_%26_Abilities)
-(about 1,250), with a class filter. Picking one fills in its name, icon and cooldown (its recast time), or its
+(about 1,900), with a class filter. Picking one fills in its name, icon and cooldown (its recast time), or its
 duration as a buff timer. You only set the key.
+
+Which abilities a class has, and at what level, comes from the class's own wiki page (for example
+[Beastmaster](https://monstersandmemories.miraheze.org/wiki/Beastmaster)), because class reworks are written
+there first and many spell pages still name classes that no longer get the spell. Icons, cast times and recasts
+come from the spell pages. An ability that's only on a class page has no recast to fill in; a new rank of a
+spell line ("Maul IV") shows that line's icon. If a class page can't be read, its spell pages are used instead.
 
 Most wiki pages leave the recast blank, often because the spell only has the global cooldown. Those are added
 with the cooldown left blank (highlighted) for you to fill in; nothing is guessed. A few wiki pages have no icon.
@@ -146,6 +152,42 @@ with the cooldown left blank (highlighted) for you to fill in; nothing is guesse
 The list ships with the app (`data/spells.json`). **Update from wiki** in that dialog fetches a fresh copy into
 `~/.config/mnm-tools/`, downloading only icons it doesn't already have. To refresh the bundled copy and its
 icons (`icons/spells/`), run `npm run update-spells`.
+
+## Wiki helper (spell screenshots)
+
+**Wiki helper (spell screenshots)…** in the tray menu turns screenshots of the game's spell windows into wiki
+edits. It needs Tesseract, Pillow and numpy (`pacman -S tesseract tesseract-data-eng python-pillow python-numpy`).
+
+1. Open a spell's window in game and screenshot the whole window (Spectacle's window or region mode). If it
+   scrolls, scroll down and take another. The screenshots of one spell are joined where they overlap, in
+   whatever order you took them; if they don't overlap, the helper says a line may be missing.
+2. Add them with **Add screenshots…**, by dropping them on the window, or tick **Read new screenshots from** to
+   pick up every screenshot saved to that folder while the window is open.
+3. Each spell gets a card: the text read from the screenshots (shaky readings in orange), and a table of the
+   spell page's fields, with what the wiki has now and what the game says. Only fields that differ are ticked.
+   Fields marked **(check)** are worded differently by the game and the wiki, so they only fill blanks unless
+   you tick them. Every value can be corrected before it's used. "Requires Line of Sight" and the like go into
+   `other`; lines the helper doesn't know are listed, never dropped.
+4. **Page text to publish** shows the exact text. For a page that exists only the ticked fields change; for a
+   new page it's a whole `{{Spellpagesmart}}` page with its categories.
+5. **Icons:** add a screenshot of a spellbook page too. There the icons sit on their coloured backgrounds, like
+   the wiki's icon files, so each one is matched with the wiki's icons by its picture and its name under it.
+   A match becomes the page's `spellicon` (and corrects a page whose icon is wrong). An icon the wiki doesn't
+   have yet can be uploaded with **Upload icon to the wiki…** (a 63 x 63 PNG in Category:Spell Icons, under the
+   file name you give it) and is then used on the page; a name that's taken is refused, and if the same picture
+   is already on the wiki that file is used instead. **Save icon image…** saves the same PNG to upload by hand. (The spell
+   window's own icon has no background, so it's only shown, not matched.)
+6. **Class page:** with your class chosen at the top, the window's "Required Level" says where the ability
+   belongs on your class page. If it isn't listed, the helper makes the row in that page's own layout and can
+   add it under the right level (making the level's section if the page has none yet).
+
+Then either **Copy** the text (or **Open the edit page**, which copies it too) and paste it in yourself, or
+**Publish**, which saves that one edit under your own wiki account after you confirm it. Publishing uses a bot
+password from the wiki's Special:BotPasswords page, kept in your desktop keyring if you tick **Remember**. An
+edit is refused, not forced, if someone changed the page after the helper read it. The helper never edits on
+its own: every edit is one you looked at and pressed Publish for.
+
+Reading screenshots is all it does with the game: it doesn't read game files, memory or traffic.
 
 ## Quest tracker
 

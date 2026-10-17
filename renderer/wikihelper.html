@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; style-src 'self'; script-src 'self'; font-src 'self'">
+<title>MnM Tools — Wiki helper</title><link rel="stylesheet" href="wikihelper.css"></head>
+<body>
+<header>
+  <div class="row">
+    <button id="add">Add screenshots…</button>
+    <label class="check" title="Screenshots saved to this folder while the window is open are read automatically">
+      <input type="checkbox" id="watch"> Read new screenshots from</label>
+    <button id="folder" class="small link"></button>
+    <span class="grow"></span>
+    <label class="field inline" title="Your class in game. The spell window's “Required Level” is for this class.">
+      <span>My class</span><select id="cls"></select></label>
+  </div>
+  <div class="row account">
+    <span id="who" class="muted"></span>
+    <button id="loginOpen" class="small">Log in to the wiki…</button>
+    <button id="logout" class="small" hidden>Log out</button>
+  </div>
+  <form id="loginForm" class="login" hidden>
+    <p class="muted">Use a bot password from the wiki's <b>Special:BotPasswords</b> page (give it “Edit existing pages” and
+      “Create, edit, and move pages”). Its user name looks like <code>YourName@helper</code>. Every edit is still one you
+      press Publish for.</p>
+    <div class="row">
+      <label class="field"><span>Bot user name</span><input id="loginName" autocomplete="username" required></label>
+      <label class="field"><span>Bot password</span><input id="loginPassword" type="password" autocomplete="current-password" required></label>
+      <label class="check" id="rememberWrap"><input type="checkbox" id="remember" checked> Remember on this computer</label>
+      <button type="submit">Log in</button>
+      <button type="button" id="loginCancel" class="small">Cancel</button>
+    </div>
+    <p id="loginError" class="bad" hidden></p>
+  </form>
+</header>
+
+<main id="drop">
+  <div id="empty" class="empty">
+    <p>Open a spell's window in game and take a screenshot of the whole window. If it scrolls, scroll down and take
+      another: the screenshots of one spell are joined where they overlap.</p>
+    <p>For icons, also take a screenshot of the spellbook page with those spells: there the icons are on their
+      coloured backgrounds, like the wiki's icon files, so they can be matched (or saved for uploading).</p>
+    <p>Then add them here (or drop them on this window). Nothing changes on the wiki until you press Publish.</p>
+  </div>
+  <section id="book" class="card" hidden>
+    <h3>Spellbook icons</h3>
+    <div id="bookIcons" class="book-icons"></div>
+  </section>
+  <div id="spells"></div>
+</main>
+<p id="notice" class="notice" hidden></p>
+
+<template id="card">
+  <section class="card">
+    <div class="card-head">
+      <img class="shot-icon" alt="">
+      <div class="grow">
+        <input class="name" spellcheck="false" title="The spell's name on the wiki (click to correct it)">
+        <p class="name-note warn" hidden></p>
+        <div class="parts"></div>
+      </div>
+      <button class="small remove" title="Forget this spell">×</button>
+    </div>
+    <p class="gap warn" hidden>These screenshots don't overlap, so a line between them may be missing. Add one that covers the gap.</p>
+    <details class="lines"><summary>Text read from the screenshots</summary><ol></ol></details>
+
+    <h3>Spell page <span class="page-status muted"></span>
+      <button class="small link open-page">Open on the wiki</button>
+      <button class="small reread" hidden>Try again</button></h3>
+    <div class="icon-pick" hidden>
+      <span class="muted">Icon:</span>
+      <img class="shot-icon big" alt="" title="In game">
+      <span class="muted">→</span>
+      <img class="pick-icon big" alt="" title="Wiki icon">
+      <code class="pick-name"></code>
+      <button class="small save-icon" hidden>Save icon image…</button>
+      <input class="icon-search" placeholder="Find a wiki icon by name" spellcheck="false">
+      <div class="icon-grid"></div>
+      <p class="icon-note muted"></p>
+      <div class="upload" hidden>
+        <label class="field inline"><span>File name</span><input class="upload-name" spellcheck="false"></label>
+        <button class="small do-upload">Upload icon to the wiki…</button>
+        <span class="upload-result muted"></span>
+      </div>
+    </div>
+    <table class="fields"><thead><tr><th></th><th>Field</th><th>Wiki now</th><th>From the game</th></tr></thead><tbody></tbody></table>
+    <p class="unknown muted" hidden></p>
+    <details class="text"><summary>Page text to publish <span class="hand muted" hidden>(edited by hand)</span></summary>
+      <textarea class="page-text" spellcheck="false"></textarea>
+      <button class="small rebuild" hidden>Undo my edits</button></details>
+    <div class="actions">
+      <button class="copy-page">Copy page text</button>
+      <button class="edit-page">Open the edit page</button>
+      <button class="publish-page primary">Publish</button>
+      <span class="result muted"></span>
+    </div>
+
+    <h3>Class page <span class="class-status muted"></span></h3>
+    <div class="class-row" hidden>
+      <details><summary>Row to add</summary><textarea class="row-text" spellcheck="false"></textarea></details>
+      <div class="actions">
+        <button class="copy-row">Copy row</button>
+        <button class="edit-class">Open the class page editor</button>
+        <button class="publish-class primary">Add to the class page</button>
+        <span class="class-result muted"></span>
+      </div>
+    </div>
+  </section>
+</template>
+<datalist id="spellTypes"><option value="Beneficial"><option value="Detrimental"></datalist>
+<script src="wikihelper.js"></script>
+</body></html>
