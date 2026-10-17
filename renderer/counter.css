@@ -1,0 +1,34 @@
+/* Counter tiles: the follow-up pop-up's steel frame and Cinzel number, one square per counter. */
+@font-face{font-family:Cinzel;src:url(fonts/Cinzel.ttf) format('truetype');font-weight:400 900}
+:root{--text:#ece2c6;--steel:linear-gradient(145deg,#c4c4ba 0%,#7a7a72 30%,#45453f 65%,#1c1c1a 100%)}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none}
+#tiles{display:flex;gap:4px;height:100%}
+/* A slot holds a tile, and for a counter timing each press separately the stack behind it (--room wide). */
+.slot{position:relative;flex:none;width:var(--side);height:100%}
+.slot.stacked{width:calc(var(--side) + var(--room))}
+.face{position:absolute;left:0;top:0;z-index:10;width:var(--side);height:var(--side);box-sizing:border-box;border:3px solid transparent;opacity:1;transition:opacity .15s ease-out}
+/* Each further press still running peeks out behind, a few px down and right. */
+.layer{position:absolute;left:0;top:0;width:var(--side);height:var(--side);box-sizing:border-box;border:3px solid transparent;
+  opacity:0;transform:translate(0,0);transition:transform .18s ease-out,opacity .18s ease-out}
+.layer.on{opacity:1;transform:translate(calc(var(--n) * var(--offset)),calc(var(--n) * var(--offset)))}
+.layer::before{content:'';position:absolute;inset:0;border-radius:4px;background:var(--steel);box-shadow:0 0 0 1px #0a0a09,0 2px 4px rgba(0,0,0,.55)}
+.layer::after{content:'';position:absolute;inset:6%;border-radius:2px;background:#2a2820;box-shadow:inset 0 0 10px rgba(0,0,0,.7)}
+.face::before{content:'';position:absolute;inset:0;border-radius:4px;background:var(--steel);box-shadow:0 0 0 1px #0a0a09,0 2px 6px rgba(0,0,0,.55)}
+/* At 0 a tile shows, stays faint or fades out, per the "When a counter is at 0" setting. */
+body.idle-dim .face.zero{opacity:.3;transition:opacity .7s ease-in}
+body.idle-hide .face.zero{opacity:0;transition:opacity .7s ease-in}
+body.moving .face{opacity:1;cursor:move;touch-action:none}
+body.moving .face::after{content:'';position:absolute;inset:-2px;outline:2px dashed #e8c66a;border-radius:4px}
+.panel{position:absolute;inset:6%;border-radius:2px;display:grid;place-items:center;overflow:hidden;
+  background:#3a382b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='64' height='64' filter='url(%23n)'/%3E%3C/svg%3E");
+  box-shadow:inset 1px 1px 0 #0e0e0c,inset -1px -1px 0 #5f5c50,inset 0 0 14px rgba(0,0,0,.65)}
+.icon{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.45)}
+.value{position:relative;top:-7%;font:700 calc(var(--side) * .5)/1 Cinzel,Georgia,serif;color:var(--text);text-shadow:0 1px 0 #000,0 0 4px #000,0 0 8px rgba(0,0,0,.7)}
+.face.bump .value{animation:bump .25s ease-out}
+@keyframes bump{from{transform:scale(1.3);color:#fff2c0}to{transform:scale(1)}}
+/* Drains toward the reset; a press refills it. */
+.bar{position:absolute;left:11%;right:11%;bottom:10%;height:11%;background:#0b0b0a;border-radius:2px;overflow:hidden;
+  box-shadow:inset 0 1px 2px #000,0 0 0 1px #000,0 1px 0 1px rgba(255,255,255,.1)}
+.fill{height:100%;transform-origin:left;transform:scaleX(0);
+  background:linear-gradient(#f0d58a 0%,#c9962e 40%,#9a6d14 55%,#d4a238 100%)}
+html.loading{visibility:hidden}

@@ -1,0 +1,32 @@
+/* Framed buttons: outlines over the game's own buttons, a green flash when one is clicked, and the editor. */
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none;font:13px/1.4 system-ui,sans-serif;color:#ece2c6}
+[hidden]{display:none!important} /* the banner is display:flex, which would otherwise override hidden */
+#frames{position:fixed;inset:0}
+.frame{position:absolute;box-sizing:border-box;border-radius:3px;opacity:0}
+.frame span{position:absolute;left:0;bottom:100%;margin-bottom:2px;padding:1px 5px;border-radius:3px;background:rgba(20,19,15,.85);
+  white-space:nowrap;font-size:11px;display:none}
+/* "Always show": a faint gold outline. "Flash when clicked" leaves it invisible until a click. */
+body.show-always .frame{opacity:1;border:1px solid rgba(232,198,106,.7)}
+.frame.hit{animation:hit .6s ease-out}
+@keyframes hit{
+  0%{opacity:1;border:2px solid #d8f0b0;box-shadow:0 0 10px 3px rgba(150,240,120,.85),inset 0 0 8px rgba(150,240,120,.5)}
+  100%{border:2px solid rgba(216,240,176,0);box-shadow:none}
+}
+body.show-always .frame.hit{animation:hit-shown .6s ease-out}
+@keyframes hit-shown{0%{border-color:#d8f0b0;box-shadow:0 0 10px 3px rgba(150,240,120,.85)}}
+
+/* Editing: the whole screen is tinted so you can see it is waiting for a box; other frames are labelled. */
+body.editing{background:rgba(0,0,0,.28);cursor:crosshair}
+body.editing .frame{opacity:1;border:1px dashed rgba(236,226,198,.6)}
+body.editing .frame span{display:block;color:#a59d86}
+#draft{position:absolute;box-sizing:border-box;border:2px solid #e8c66a;border-radius:3px;background:rgba(232,198,106,.12);cursor:move;
+  box-shadow:0 0 0 1px #000}
+#banner{position:absolute;display:flex;align-items:center;gap:14px;padding:10px 14px;border:1px solid #7a6a32;border-radius:8px;
+  background:#1b1a16;box-shadow:0 4px 18px rgba(0,0,0,.6);cursor:default;transform:translateX(-50%)}
+.banner-text b{color:#e8c66a}
+.muted{display:block;color:#a59d86;font-size:12px}
+.banner-actions{display:flex;gap:6px}
+button{font:inherit;color:inherit;background:#26241e;border:1px solid #3d3a30;border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover:not(:disabled){border-color:#6b6550}
+button:disabled{opacity:.35;cursor:default}
+button.primary{background:#4a3f1c;border-color:#7a6a32}

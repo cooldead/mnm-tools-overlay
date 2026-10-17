@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'; frame-src https://www.mnmatlas.com; img-src https://static.wikitide.net">
+<title>MnM Tools — Maps</title><link rel="stylesheet" href="maps.css"></head>
+<body>
+<header>
+  <div class="sources" role="tablist" aria-label="Maps from">
+    <button id="srcAtlas" role="tab" data-source="atlas" title="MnM Atlas (mnmatlas.com): search, markers and notes">MnM Atlas</button>
+    <button id="srcWiki" role="tab" data-source="wiki" title="Zone maps players drew for the Monsters &amp; Memories Wiki">Wiki</button>
+  </div>
+  <select id="pick" class="wiki-only" aria-label="Wiki map"></select>
+  <div class="zoom wiki-only">
+    <button id="zoomOut" title="Zoom out (−)">−</button>
+    <button id="fit" title="Whole map (0)">Fit</button>
+    <button id="zoomIn" title="Zoom in (+)">+</button>
+  </div>
+  <button id="toMinimap" title="Show this map on the minimap, at this spot">Show on minimap</button>
+  <button id="wikiPage" class="wiki-only" title="Open the map's page on the wiki in your web browser">On the wiki ↗</button>
+</header>
+<webview id="atlas" partition="persist:mnmatlas" allowpopups></webview>
+<div id="view" class="map-box"><p id="status"></p></div>
+<footer id="credit" class="wiki-only"></footer>
+<script src="map-view.js"></script>
+<script src="maps.js"></script>
+</body></html>

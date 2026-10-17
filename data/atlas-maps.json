@@ -1,0 +1,81 @@
+{
+ "fetchedAt": "2026-10-08",
+ "maps": [
+  {
+   "id": "world",
+   "title": "World map"
+  },
+  {
+   "id": "night-harbor",
+   "title": "Night Harbor"
+  },
+  {
+   "id": "underdocks",
+   "title": "Underdocks"
+  },
+  {
+   "id": "ail-vorith",
+   "title": "Ail'Vorith"
+  },
+  {
+   "id": "faelindral",
+   "title": "Faelindral"
+  },
+  {
+   "id": "evershade-weald",
+   "title": "Evershade Weald"
+  },
+  {
+   "id": "sungreet-strand",
+   "title": "Sungreet Strand"
+  },
+  {
+   "id": "shaded-dunes",
+   "title": "Shaded Dunes"
+  },
+  {
+   "id": "fallen-pass",
+   "title": "Fallen Pass"
+  },
+  {
+   "id": "wyrmsbane-tomb",
+   "title": "Tomb of the Last Wyrmsbane"
+  },
+  {
+   "id": "glass-flats",
+   "title": "Glass Flats"
+  },
+  {
+   "id": "ancient-crypt",
+   "title": "Ancient Crypt"
+  },
+  {
+   "id": "scarwood",
+   "title": "Scarwood"
+  },
+  {
+   "id": "vale-of-zintar",
+   "title": "Vale of Zintar"
+  },
+  {
+   "id": "grain-cellar",
+   "title": "Grain Cellar"
+  },
+  {
+   "id": "great-cavern-sea",
+   "title": "Great Cavern Sea"
+  },
+  {
+   "id": "tel-ekir",
+   "title": "Tel Ekir"
+  },
+  {
+   "id": "keepers-bight",
+   "title": "Keeper’s Bight"
+  },
+  {
+   "id": "fallen-watch",
+   "title": "Fallen Watch"
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+/* Map window: source tabs, then the atlas (a webview) or a wiki map (a pan-and-zoom picture with its credit). */
+:root{color-scheme:dark;--bg:#1b1a16;--line:#3d3a30;--text:#ece2c6;--muted:#a59d86;--accent:#e8c66a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);background:#14130f}
+select,button{font:inherit;color:var(--text);background:#26241e;border:1px solid var(--line);border-radius:6px;padding:4px 10px}
+button:hover,select:hover{border-color:var(--accent)}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.sources{display:flex}
+.sources button{border-radius:0;font-weight:600;color:var(--muted)}
+.sources button:first-child{border-radius:6px 0 0 6px}
+.sources button:last-child{border-radius:0 6px 6px 0;margin-left:-1px}
+.sources button[aria-selected="true"]{background:#3a3424;color:var(--accent);border-color:var(--accent);position:relative}
+#pick{min-width:0;flex:1 1 220px;max-width:420px}
+.zoom{display:flex;gap:2px}
+.zoom button{min-width:34px}
+body:not(.wiki) .wiki-only{display:none}
+#atlas{display:flex;flex:1;background:#16120e}
+body.wiki #atlas{display:none}
+.map-box{position:relative;flex:1;overflow:hidden;background:#16120e;cursor:grab;touch-action:none}
+body:not(.wiki) .map-box{display:none}
+.map-box.dragging{cursor:grabbing}
+.map-image{position:absolute;left:0;top:0;max-width:none;transform-origin:0 0;user-select:none;-webkit-user-drag:none}
+#status{position:absolute;inset:0;margin:0;display:flex;align-items:center;justify-content:center;color:var(--muted);pointer-events:none}
+#status:empty{display:none}
+footer{padding:4px 12px;border-top:1px solid var(--line);background:#14130f;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

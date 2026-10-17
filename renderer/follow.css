@@ -1,0 +1,23 @@
+/* Same look as the original countdown overlay: steel bevel frame, dark textured panel, Cinzel, glossy bar. */
+@font-face{font-family:Cinzel;src:url(fonts/Cinzel.ttf) format('truetype');font-weight:400 900}
+:root{--text:#ece2c6;--steel:linear-gradient(145deg,#c4c4ba 0%,#7a7a72 30%,#45453f 65%,#1c1c1a 100%)}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none}
+#face{position:fixed;inset:3px;border-radius:4px;background:var(--steel);box-shadow:0 0 0 1px #0a0a09,0 2px 6px rgba(0,0,0,.55);opacity:1;transition:opacity .15s ease-out}
+/* Fades out after GO; "Stay faintly visible" keeps a dim frame so you can see where it is. */
+body.idle #face{opacity:0;transition:opacity .7s ease-in}
+body.idle.dim #face{opacity:.3}
+body.moving #face{opacity:1;outline:2px dashed #e8c66a;outline-offset:1px;cursor:move;touch-action:none}
+.panel{position:absolute;inset:6%;border-radius:2px;display:grid;place-items:center;overflow:hidden;
+  background:#3a382b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='64' height='64' filter='url(%23n)'/%3E%3C/svg%3E");
+  box-shadow:inset 1px 1px 0 #0e0e0c,inset -1px -1px 0 #5f5c50,inset 0 0 14px rgba(0,0,0,.65)}
+/* The next ability's icon sits behind the number, darkened so the number stays readable; it brightens on GO. */
+#icon{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.45);transition:filter .15s}
+#face.go #icon{filter:brightness(.8)}
+#value{position:relative;top:-7%;font:700 50vmin/1 Cinzel,Georgia,serif;color:var(--text);text-shadow:0 1px 0 #000,0 0 4px #000,0 0 8px rgba(0,0,0,.7)}
+#face.go #value{font-size:34vmin;color:#d8f0b0}
+.bar{position:absolute;left:11%;right:11%;bottom:10%;height:11%;background:#0b0b0a;border-radius:2px;overflow:hidden;
+  box-shadow:inset 0 1px 2px #000,0 0 0 1px #000,0 1px 0 1px rgba(255,255,255,.1)}
+#fill{height:100%;transform-origin:left;transform:scaleX(0);
+  background:linear-gradient(#7d93ff 0%,#3149ee 40%,#1424b8 55%,#2b45f0 100%)}
+#face.go #fill{background:linear-gradient(#9ef09a 0%,#3fbf3a 40%,#22891f 55%,#43c63e 100%)}
+html.loading{visibility:hidden}

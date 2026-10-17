@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'">
+<title>MnM Tools — Quests</title><link rel="stylesheet" href="quests.css"></head>
+<body>
+<div id="bar" class="overlay-only" title="Drag to move">
+  <span>Quests</span>
+  <button id="toWindow" class="small" title="Show the quest log as an ordinary window">Window</button>
+  <button id="closeOverlay" class="small" title="Hide the quest log overlay">×</button>
+</div>
+<header>
+  <div class="pickers">
+    <label class="field"><span>Zone</span><select id="zone"></select></label>
+    <label class="field grow"><span>Quest</span><select id="quest"></select></label>
+  </div>
+  <div class="toolbar">
+    <label class="check" title="Hide quests that are only for other classes (uses the class set for importing abilities in this profile)"><input type="checkbox" id="classOnly"> <span id="classOnlyLabel">My class only</span></label>
+    <label class="check"><input type="checkbox" id="dialogue"> Show dialogue</label>
+    <label class="check window-only" title="Keep this window above the game"><input type="checkbox" id="onTop"> On top</label>
+    <button id="toOverlay" class="small window-only" title="Show the quest log over the game, see-through and click-through">Overlay</button>
+    <label class="field overlay-only inline" title="How solid the background is. The text stays readable."><span>Background</span>
+      <input type="range" id="questOpacity" min="0" max="1" step="0.05"><output id="questOpacityOut"></output></label>
+    <label class="field overlay-only inline" title="Text size in the overlay"><span>Text</span>
+      <input type="range" id="questTextScale" min="0.6" max="1.3" step="0.05"><output id="questTextScaleOut"></output></label>
+  </div>
+</header>
+
+<main>
+  <div id="none" class="empty">Choose a zone, then a quest that starts there.</div>
+  <section id="quest-view" hidden>
+    <div class="quest-head">
+      <h1 id="title"></h1>
+      <div id="meta" class="meta"></div>
+      <div class="quest-actions">
+        <div class="segmented" id="view">
+          <button data-value="full">Walkthrough</button>
+          <button data-value="quick">Quick guide</button>
+        </div>
+        <span id="progress" class="progress"></span>
+        <button id="reset" class="small">Reset</button>
+        <button id="wiki" class="small" title="Open the quest's wiki page in your browser">Wiki ↗</button>
+      </div>
+    </div>
+    <ol id="steps"></ol>
+  </section>
+</main>
+
+<footer>
+  <span id="dataInfo"></span>
+  <button id="update" class="small">Update from wiki</button>
+</footer>
+
+<div id="grip" class="overlay-only" title="Drag to resize"></div>
+<script src="quests.js"></script>
+</body></html>

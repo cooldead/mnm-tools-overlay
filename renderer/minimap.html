@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; font-src 'self'; frame-src https://www.mnmatlas.com; img-src https://static.wikitide.net">
+<title>MnM Minimap</title><link rel="stylesheet" href="minimap.css"></head>
+<body>
+<div id="frame">
+  <webview id="map" partition="persist:mnmatlas" allowpopups></webview>
+  <div id="wikimap" class="map-box" hidden></div>
+  <div id="credit" hidden></div>
+  <div id="handle" title="Drag to move">⠿ move</div>
+  <div id="cover"><span>Drag to move</span></div>
+  <div id="grip" title="Drag to resize"></div>
+  <div id="badge" hidden></div>
+</div>
+<script src="map-view.js"></script>
+<script src="minimap.js"></script>
+</body></html>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; style-src 'self'; script-src 'self'; font-src 'self'">
+<title>MnM Frames</title><link rel="stylesheet" href="frames.css"></head>
+<body>
+<div id="frames"></div>
+<div id="draft" hidden></div>
+<div id="banner" hidden>
+  <div class="banner-text">Drag a box around the button for <b id="target"></b>.
+    <span class="muted">Drag the box to move it · arrows nudge · Shift+arrows resize · Enter saves · Esc cancels</span></div>
+  <div class="banner-actions">
+    <button id="save" class="primary">Save</button>
+    <button id="remove">Remove frame</button>
+    <button id="cancel">Cancel</button>
+  </div>
+</div>
+<script src="frames.js"></script>
+</body></html>

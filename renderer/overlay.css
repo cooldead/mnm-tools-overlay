@@ -1,0 +1,45 @@
+/* Styled after the Monsters & Memories UI, like the countdown overlay: steel bevel frame, Cinzel numbers. */
+@font-face{font-family:Cinzel;src:url(fonts/Cinzel.ttf) format('truetype');font-weight:400 900}
+:root{--tile:56px;--gap:4px;--pad:6px;--text:#ece2c6;--steel:linear-gradient(145deg,#c4c4ba 0%,#7a7a72 30%,#45453f 65%,#1c1c1a 100%)}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none}
+body.size-Small{--tile:40px}
+body.size-Large{--tile:72px}
+body.size-Extra-large{--tile:96px}
+
+#bar{position:fixed;inset:0;padding:var(--pad);display:flex;gap:var(--gap);box-sizing:border-box}
+body.vertical #bar{flex-direction:column}
+body.moving #bar{outline:2px dashed #e8c66a;outline-offset:-2px;cursor:move;touch-action:none;background:rgba(0,0,0,.25)}
+
+.tile{position:relative;flex:none;width:var(--tile);height:var(--tile);border-radius:4px;background:var(--steel);
+  box-shadow:0 0 0 1px #0a0a09,0 2px 6px rgba(0,0,0,.55);transition:opacity .25s ease-out}
+.tile img{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);border-radius:2px;object-fit:cover;background:#2a2820}
+.sweep{position:absolute;inset:3px;border-radius:2px;display:none;
+  background:conic-gradient(rgba(5,5,4,.78) var(--left,0deg),rgba(5,5,4,.25) 0)}
+.tile.cooling .sweep{display:block}
+.time{position:absolute;inset:0;display:grid;place-items:center;font:700 calc(var(--tile)*.42)/1 Cinzel,Georgia,serif;color:var(--text);
+  text-shadow:0 1px 0 #000,0 0 4px #000,0 0 8px rgba(0,0,0,.8)}
+.key{position:absolute;right:4px;bottom:2px;display:none;font:600 calc(var(--tile)*.2)/1 system-ui,sans-serif;color:#fff;
+  text-shadow:0 0 2px #000,0 0 3px #000,0 0 4px #000}
+body.keys .key{display:block}
+body.size-Small .key{font-size:9px}
+
+/* When an ability is ready: show it normally, dim it, or hide it (its slot stays put). Move mode shows all. */
+body.ready-dim .tile:not(.cooling):not(.flash){opacity:.4}
+body.ready-hide .tile:not(.cooling):not(.flash){opacity:0}
+body.moving .tile{opacity:1!important}
+
+.tile.flash{animation:ready .9s ease-out}
+@keyframes ready{
+  0%{box-shadow:0 0 0 1px #0a0a09,0 0 0 2px #d8f0b0,0 0 14px 4px rgba(150,240,120,.9)}
+  100%{box-shadow:0 0 0 1px #0a0a09,0 2px 6px rgba(0,0,0,.55)}
+}
+
+/* Stacking: only cooling abilities are shown, packed together from the start of the bar in the order they
+   started; one that finishes glows, fades and the rest close up. Nothing cooling means nothing is visible.
+   Tiles use CSS order, which only matters here; without stacking every tile keeps its list position. */
+body:not(.stack) .tile{order:0!important}
+body.stack .tile:not(.cooling):not(.flash){display:none}
+body.stack .tile.flash{animation:ready .9s ease-out,stack-out .9s ease-in forwards}
+@keyframes stack-out{0%,40%{opacity:1}100%{opacity:0}}
+body.stack.moving .tile{display:block;animation:none}
+html.loading{visibility:hidden}

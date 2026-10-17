@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; style-src 'self'; script-src 'self'; font-src 'self'">
+<title>MnM Tools — Settings</title><link rel="stylesheet" href="settings.css"></head>
+<body>
+<header>
+  <h1>MnM Tools</h1>
+  <label class="header-profile">Profile <select id="profile" title="Switch profile"></select></label>
+  <button id="openQuests" title="Open the quest tracker">Quests</button>
+  <span id="status" class="status">Starting…</span>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" data-section="profile">Profile<span class="tab-info" id="info-profile"></span></button>
+  <button class="tab" role="tab" data-section="abilities">Abilities<span class="tab-info" id="info-abilities"></span></button>
+  <button class="tab" role="tab" data-section="followUps">Follow-ups<span class="tab-info" id="info-followUps"></span></button>
+  <button class="tab" role="tab" data-section="counters">Counters<span class="tab-info" id="info-counters"></span></button>
+  <button class="tab" role="tab" data-section="overlay">Overlay<span class="tab-info" id="info-overlay"></span></button>
+  <button class="tab" role="tab" data-section="clock">Game clock<span class="tab-info" id="info-clock"></span></button>
+  <button class="tab" role="tab" data-section="minimap">Map<span class="tab-info" id="info-minimap"></span></button>
+  <button class="tab" role="tab" data-section="watching">Key and click watching<span class="tab-info" id="info-watching"></span></button>
+</nav>
+
+<main>
+  <section class="section" data-section="profile" role="tabpanel" aria-label="Profile">
+    <p class="hint">Switch profiles from the menu at the top. Each profile has its own abilities, follow-ups, counters and class for importing. Layout, sizes and overlay positions are shared.</p>
+    <div class="profile-row">
+      <button id="profileNew">New…</button>
+      <button id="profileCopy">Copy…</button>
+      <button id="profileRename">Rename…</button>
+      <button id="profileDelete">Delete</button>
+    </div>
+    <div class="grid follow-options">
+      <span class="label">Switch automatically</span>
+      <label class="check"><input type="checkbox" id="autoProfile"> When a character logs in, switch to their profile (a character's first login makes a new, empty one)</label>
+    </div>
+    <p id="loginInfo" class="hint"></p>
+  </section>
+
+  <section class="section" data-section="abilities" role="tabpanel" aria-label="Abilities">
+    <p class="hint">Set the same key you use for the ability in game. The cooldown starts when you press that key while the game window is focused. If you click the ability instead, use <b>Frame</b> to draw a box around its button in game, and a left click inside that box counts too.</p>
+    <div id="abilities"></div>
+    <p id="empty" class="empty" hidden>No abilities yet. Add one to get started.</p>
+    <div class="add-row">
+      <button id="openImport" class="primary">Import for my class…</button>
+      <button id="addWiki">+ Add from wiki</button>
+      <button id="add">+ Add your own</button>
+    </div>
+  </section>
+
+  <section class="section" data-section="followUps" role="tabpanel" aria-label="Follow-ups">
+    <p class="hint">Press a key and a countdown pops up, showing <b>GO</b> when it's time for your next ability. Pressing that ability's key clears it early.</p>
+    <div id="followUps"></div>
+    <p id="followEmpty" class="empty" hidden>No follow-ups yet.</p>
+    <div class="add-row"><button id="addFollow" class="primary">+ Add follow-up</button></div>
+    <div class="grid follow-options">
+      <label class="label" for="followSize">Pop-up size</label>
+      <select id="followSize"><option>Extra small</option><option>Small</option><option>Medium</option><option>Large</option></select>
+
+      <label class="label" for="followIdle">When no countdown is running</label>
+      <select id="followIdle">
+        <option value="hide">Fade out completely</option>
+        <option value="dim">Stay faintly visible</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="section" data-section="counters" role="tabpanel" aria-label="Counters">
+    <p class="hint">Each press of the key (or click on its frame) adds one. The count goes back to 0 once that many seconds pass without another press, and the bar under the number shows how long is left. A <b>clear key</b> (optional) sets it back to 0 straight away. <b>For each press separately</b> gives every press its own timer: the number is how many are still running, each running press stacks a tile behind it, and they run out one by one. With <b>new one only after</b>, a press that comes sooner than that after the last one that started a timer is ignored.</p>
+    <div id="counters"></div>
+    <p id="counterEmpty" class="empty" hidden>No counters yet.</p>
+    <div class="add-row"><button id="addCounter" class="primary">+ Add counter</button></div>
+    <div class="grid follow-options">
+      <label class="label" for="counterSize">Counter size</label>
+      <select id="counterSize"><option>Extra small</option><option>Small</option><option>Medium</option><option>Large</option></select>
+
+      <label class="label" for="counterIdle">When a counter is at 0</label>
+      <select id="counterIdle">
+        <option value="show">Show it</option>
+        <option value="dim">Stay faintly visible</option>
+        <option value="hide">Fade out completely</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="section" data-section="overlay" role="tabpanel" aria-label="Overlay">
+    <div class="grid">
+      <span class="label">Layout</span>
+      <div class="segmented" id="layout">
+        <button data-value="horizontal">Horizontal</button>
+        <button data-value="vertical">Vertical</button>
+      </div>
+
+      <label class="label" for="size">Icon size</label>
+      <select id="size">
+        <option>Small</option><option>Medium</option><option>Large</option><option>Extra large</option>
+      </select>
+
+      <span class="label">Stacking</span>
+      <label class="check"><input type="checkbox" id="stack"> Only show abilities that are cooling down, side by side in the order they started. Fades out completely when none are.</label>
+
+      <label class="label" for="ready">When an ability is ready</label>
+      <select id="ready">
+        <option value="show">Show the icon</option>
+        <option value="dim">Dim the icon</option>
+        <option value="hide">Hide the icon (show only while cooling down)</option>
+      </select>
+
+      <span class="label">Key labels</span>
+      <label class="check"><input type="checkbox" id="showKeys"> Show each ability's key on its icon</label>
+
+      <span class="label">Loading screens</span>
+      <label class="check"><input type="checkbox" id="hideWhileLoading"> Hide the cooldowns, follow-up pop-up and counters while the game shows a loading screen (zoning). Cooldowns keep counting underneath.</label>
+    </div>
+    <p class="hint">To move the cooldown bar, the follow-up pop-up, the counters or the game clock, use <b>Move overlays</b> in the tray menu, drag them, then untick it.</p>
+  </section>
+
+  <section class="section" data-section="clock" role="tabpanel" aria-label="Game clock">
+    <p class="hint">The in-game time and date, worked out the same way as the clock on the wiki (20 game days pass per real day, from midnight UTC). It isn't read from the game. You can also turn it on and off from the tray menu.</p>
+    <div class="grid">
+      <span class="label">Show</span>
+      <label class="check"><input type="checkbox" id="clock"> Show the game clock</label>
+
+      <label class="label" for="clockSize">Size</label>
+      <select id="clockSize"><option>Small</option><option>Medium</option><option>Large</option></select>
+
+      <span class="label">Date</span>
+      <label class="check"><input type="checkbox" id="clockDate"> Show the game date under the time</label>
+
+      <span class="label">Loading</span>
+      <label class="check"><input type="checkbox" id="clockHideWhileLoading"> Hide the clock while the game shows a loading screen (zoning)</label>
+    </div>
+  </section>
+
+  <section class="section" data-section="minimap" role="tabpanel" aria-label="Map">
+    <p class="hint">Maps from <b>MnM Atlas</b> (mnmatlas.com), a fan atlas, and the zone maps players have drawn for the <b>Monsters &amp; Memories Wiki</b> (CC BY-SA 4.0, credited on the map), both shown live from the sites. The game doesn't say where your character is, so the minimap can switch to the zone you enter but can't follow you around it: use it, pan to where you are, and lock it again.</p>
+    <div class="grid">
+      <span class="label">Map window</span>
+      <div><button type="button" id="openMaps">Open the map window</button>
+        <p class="hint">The tabs at its top switch between <b>MnM Atlas</b> and the <b>Wiki</b> maps. On a wiki map, drag to pan and scroll to zoom; when a zone has several, the one you pick is used for that zone from then on. <b>Show on minimap</b> puts the map you're looking at on the minimap, at the same spot.</p></div>
+
+      <span class="label">Minimap</span>
+      <label class="check"><input type="checkbox" id="minimap"> Show the minimap over the game</label>
+
+      <span class="label">Use it</span>
+      <div><button type="button" id="useKey" class="key map-key">Set key</button>
+        <p class="hint">Press this key in game to use the minimap and the quest log overlay (pan, zoom, move, resize, tick steps), then press it again to lock them (clicks go back to the game). The tray menu does the same.</p></div>
+
+      <span class="label">Zoom keys</span>
+      <div><button type="button" id="minimapZoomInKey" class="key map-key">Set key</button> in &nbsp;
+        <button type="button" id="minimapZoomOutKey" class="key map-key">Set key</button> out
+        <p class="hint">Zoom the minimap while you play, without unlocking it. Right-click a key button to clear it.</p></div>
+
+      <span class="label">Mouse</span>
+      <label class="check"><input type="checkbox" id="minimapMouse"> Drag and scroll the minimap's map with the mouse any time (clicks on the minimap don't reach the game; untick to make it click-through until you unlock it)</label>
+
+      <span class="label">Zone</span>
+      <div><label class="check"><input type="checkbox" id="minimapFollowZone"> Minimap: switch to the map of the zone you enter</label>
+        <label class="check"><input type="checkbox" id="atlasFollowZone"> Map window: switch to it too (atlas and wiki)</label></div>
+
+      <label class="label" for="minimapSource">Minimap uses</label>
+      <div><select id="minimapSource"><option value="atlas">Atlas maps first</option><option value="wiki">Wiki maps first</option></select>
+        <p class="hint">Which map the minimap switches to when you enter a zone. If that one has no map of the zone, the other is used.</p></div>
+
+      <label class="label" for="minimapShape">Shape</label>
+      <select id="minimapShape"><option value="round">Round</option><option value="square">Square</option></select>
+
+      <label class="label" for="minimapOpacity">When locked</label>
+      <select id="minimapOpacity">
+        <option value="1">Solid</option><option value="0.9">90% opaque</option><option value="0.75">75% opaque</option>
+        <option value="0.6">60% opaque</option><option value="0.45">45% opaque</option>
+      </select>
+
+      <span class="label">Loading</span>
+      <label class="check"><input type="checkbox" id="minimapHideWhileLoading"> Hide the minimap while the game shows a loading screen (zoning)</label>
+    </div>
+    <p class="hint">To move or resize the minimap, use <b>Move overlays</b> in the tray menu: drag it, or drag its corner to resize it. Notes you add on the atlas are kept in this app; notes from your web browser can be moved over with the atlas's <b>Export notes</b> and <b>Import notes</b>.</p>
+  </section>
+
+  <section class="section" data-section="watching" role="tabpanel" aria-label="Key and click watching">
+    <div class="grid">
+      <span class="label">Which window</span>
+      <label class="check"><input type="checkbox" id="gameOnly"> Only count keys pressed in the Monsters &amp; Memories window</label>
+
+      <label class="label" for="showFrames">Framed buttons</label>
+      <select id="showFrames">
+        <option value="hide">Invisible (clicks still count)</option>
+        <option value="flash">Flash when clicked</option>
+        <option value="always">Always show the frames</option>
+      </select>
+
+      <label class="label" for="repress">Pressing again during a cooldown</label>
+      <select id="repress">
+        <option value="ignore">Ignore it (like the game does)</option>
+        <option value="restart">Restart the cooldown</option>
+      </select>
+    </div>
+    <p class="hint">Keys are watched passively, so the game still gets every key. Typing in chat also counts, so a "2" in a chat message starts the ability on 2. Use <b>Reset all cooldowns and counters</b> in the tray menu if that happens.</p>
+    <p class="hint">Frames are fixed places on your screen. If you move the game window, change its resolution or rearrange your hotbar, frame the buttons again. Only left clicks count.</p>
+  </section>
+</main>
+
+<dialog id="nameDialog">
+  <form method="dialog" class="name-form">
+    <label id="nameLabel" for="nameInput">Profile name</label>
+    <input id="nameInput" maxlength="40" autocomplete="off" required>
+    <p id="nameHint" class="hint"></p>
+    <div class="add-row">
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button id="nameOk" value="ok" class="primary">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="grabDialog">
+  <form method="dialog" class="name-form grab-form">
+    <span class="label">Icon from the frame in game</span>
+    <div class="grab-previews">
+      <figure><canvas id="grabFull"></canvas><figcaption>What's under the frame</figcaption></figure>
+      <figure><canvas id="grabResult"></canvas><figcaption>Your icon</figcaption></figure>
+    </div>
+    <label class="grab-trim">Trim edges <input id="grabTrim" type="range" min="0" max="35" step="1" value="0"> <span id="grabTrimValue">0%</span></label>
+    <p id="grabError" class="hint grab-error" hidden></p>
+    <p class="hint">Trim to cut off the hotbar slot's border and key number. Grab while the ability is ready, so the game's cooldown sweep isn't in the picture. If it looks wrong, press <b>Grab again</b> or move the frame.</p>
+    <div class="add-row">
+      <button id="grabAgain" type="button">Grab again</button>
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button id="grabUse" value="ok" class="primary">Use this icon</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="picker">
+  <form method="dialog" class="picker-head">
+    <input id="search" type="search" placeholder="Search icons (e.g. fire, heal, Blast of Water)" autocomplete="off">
+    <select id="category"><option value="">All categories</option></select>
+    <button value="cancel">Close</button>
+  </form>
+  <div id="icons" class="icons"></div>
+  <div class="picker-foot">
+    <span id="count" class="hint"></span>
+    <div class="add-row">
+      <button id="grabFrame" title="Copy the picture under this ability's frame in the game">Grab from frame</button>
+      <button id="custom">Use my own image…</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="wiki">
+  <form method="dialog" class="picker-head">
+    <input id="spellSearch" type="search" placeholder="Search spells and abilities" autocomplete="off">
+    <select id="spellClass"><option value="">All classes</option></select>
+    <button value="cancel">Done</button>
+  </form>
+  <div id="spellList" class="spell-list"></div>
+  <div class="picker-foot">
+    <span id="wikiInfo" class="hint"></span>
+    <button id="updateWiki">Update from wiki</button>
+  </div>
+</dialog>
+
+<dialog id="import">
+  <form method="dialog" class="picker-head import-head">
+    <label>Class <select id="impClass"><option value="">Choose…</option></select></label>
+    <label>Race <select id="impRace"><option value="">None</option></select></label>
+    <label>Level <input id="impLevel" type="number" min="1" max="100" step="1"></label>
+    <button value="cancel">Close</button>
+  </form>
+  <div id="importBody" class="spell-list"></div>
+  <div class="picker-foot">
+    <span id="importInfo" class="hint"></span>
+    <div class="add-row">
+      <button id="importUpdate">Update from wiki</button>
+      <button id="importApply" class="primary" disabled>Add selected</button>
+    </div>
+  </div>
+</dialog>
+
+<template id="spellRow">
+  <div class="spell">
+    <img alt="">
+    <div class="spell-text">
+      <div class="spell-name"></div>
+      <div class="spell-meta"></div>
+    </div>
+    <div class="spell-actions"></div>
+  </div>
+</template>
+
+<template id="followRow">
+  <div class="follow">
+    <span class="word">When I press</span>
+    <button class="key" title="Click, then press the key that starts the countdown"></button>
+    <button class="frame" title="Frame its button in game, so clicking that button starts the countdown too"></button>
+    <span class="word">count down</span>
+    <label class="secs"><input type="number" min="0.5" max="600" step="0.5" placeholder="?"> s</label>
+    <span class="word">to</span>
+    <select class="next" title="The ability to press when it shows GO"></select>
+    <button class="remove" title="Remove">✕</button>
+  </div>
+</template>
+
+<template id="counterRow">
+  <div class="follow counter">
+    <button class="icon" title="Choose icon"><img alt=""></button>
+    <input class="name" placeholder="Counter name" maxlength="60">
+    <button class="key" title="Click, then press the key to count"></button>
+    <button class="frame" title="Frame its button in game, so clicking that button counts too"></button>
+    <button class="key clear-key" title="Click, then press a key that sets the count back to 0 at once. Right-click to remove it."></button>
+    <span class="word">resets after</span>
+    <label class="secs"><input type="number" min="0.5" max="86400" step="0.5" placeholder="?"> s</label>
+    <select class="reset-from" title="When the reset time starts">
+      <option value="last">after the last press</option>
+      <option value="first">after the first press</option>
+      <option value="each">for each press separately</option>
+    </select>
+    <label class="min-gap" title="A press sooner than this after the last one that started a timer is ignored (so a double press counts once). 0 counts every press.">new one only after
+      <input type="number" min="0" max="3600" step="0.1" placeholder="0"> s</label>
+    <button class="remove" title="Remove">✕</button>
+  </div>
+</template>
+
+<template id="row">
+  <div class="ability">
+    <button class="icon" title="Choose icon"><img alt=""></button>
+    <input class="name" placeholder="Ability name" maxlength="60">
+    <button class="key" title="Click, then press the key you use in game"></button>
+    <label class="secs"><input type="number" min="0.5" max="86400" step="0.5" placeholder="?"> s</label>
+    <div class="row-actions">
+      <button class="frame" title="Frame this ability's button in game, so clicking it counts like pressing the key"></button>
+      <button class="up" title="Move up">▲</button>
+      <button class="down" title="Move down">▼</button>
+      <button class="remove" title="Remove">✕</button>
+    </div>
+  </div>
+</template>
+
+<script src="icon-url.js"></script>
+<script src="settings.js"></script>
+</body></html>
