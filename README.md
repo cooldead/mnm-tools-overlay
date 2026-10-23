@@ -85,6 +85,10 @@ changes until you press **Use this icon**. Grab while the ability is ready, so t
 picture. The game window has to be open, and the frame has to be inside it. `grab.py` reads only those pixels from
 the game's window, like a screenshot of that spot; it doesn't touch the game's files or memory.
 
+**Icons from MnM Icon Creator:** its **Add to MnM Tools** button saves spellbook icons in `custom-icons/` in the
+data folder. They show in the icon picker under **Custom**, are used when you import or upgrade abilities, and replace
+the wiki icon on abilities with the same name. Pictures you chose yourself (grabbed or custom images) are kept.
+
 Under **Key and click watching**, **Framed buttons** sets whether the frames are invisible, flash green when
 clicked (the default), or always show as a faint outline over the game. Frames are fixed spots on the screen, so
 frame the buttons again after moving the game window, changing its resolution or rearranging the hotbar.

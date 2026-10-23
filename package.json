@@ -13,6 +13,6 @@
     "update-maps": "node scripts/update-maps.js"
   },
   "devDependencies": {
-    "electron": "^44.5.1"
+    "electron": "^44.9.3"
   }
 }

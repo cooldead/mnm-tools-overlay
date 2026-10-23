@@ -45,3 +45,19 @@ test('imported abilities use the rank in their name; upgrades keep the key and a
   const up = upgradeAbility(typed, { name: 'Ancestral Wisdom', page: 'Ancestral Wisdom III', recast: 0, icon: 'b.png' });
   assert.deepEqual(up, { id: 'w', name: 'Ancestral Wisdom III', key: { code: 5 }, seconds: 12, icon: 'b.png', wiki: 'Ancestral Wisdom III' });
 });
+
+test('game icons replace wiki icons by name, but not pictures you chose', () => {
+  const { withGameIcons } = require('../core');
+  const icons = [{ name: 'Uppercut', file: '/data/custom-icons/icons/custom/uppercut.png' }, { name: 'Ancestral Wisdom II', file: '/g/aw.png' }];
+  const abilities = [
+    { id: 'a', name: 'Uppercut', icon: 'wiki/spellicon032a.png' },
+    { id: 'b', name: 'uppercut ', icon: '/home/me/grabbed.png' },
+    { id: 'c', name: 'Kick', icon: 'wiki/kick.png' },
+  ];
+  const out = withGameIcons(abilities, icons);
+  assert.equal(out[0].icon, '/data/custom-icons/icons/custom/uppercut.png');
+  assert.equal(out[1].icon, '/home/me/grabbed.png');
+  assert.equal(out[2], abilities[2]);
+  assert.equal(withGameIcons(out, icons), out, 'nothing left to change');
+  assert.equal(withGameIcons(spells, icons)[7].icon, '/g/aw.png', 'matched by the rank page name');
+});

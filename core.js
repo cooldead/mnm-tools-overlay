@@ -373,6 +373,22 @@ function upgradeAbility(ability, spell) {
   return { ...ability, name: displayName(spell), icon: spell.icon || ability.icon, seconds: spell.recast > 0 ? spell.recast : ability.seconds, wiki: spell.page };
 }
 
+// Game icons saved by MnM Icon Creator ({ name, file }) take the place of the bundled wiki icon on spells and
+// abilities with the same name. An absolute icon path is a picture you chose (grabbed, custom or already a game
+// icon), so it is kept. Returns the same array when nothing changes.
+function withGameIcons(items, icons) {
+  const byName = new Map(icons.map((icon) => [icon.name.trim().toLowerCase(), icon.file]));
+  let changed = false;
+  const out = items.map((item) => {
+    if (item.icon?.startsWith('/')) return item;
+    const file = [displayName(item), item.name].map((n) => byName.get((n || '').trim().toLowerCase())).find(Boolean);
+    if (!file) return item;
+    changed = true;
+    return { ...item, icon: file };
+  });
+  return changed ? out : items;
+}
+
 const FOLLOW_SIZES = { 'Extra small': 72, Small: 96, Medium: 128, Large: 170 };
 
 // Game clock window: width per size, and a shorter window without the date line.
@@ -409,4 +425,4 @@ function lineParser(onMessage) {
   };
 }
 
-module.exports = { counterLayout, ATLAS, ZONE_ALIASES, atlasMapForZone, atlasUrl, atlasView, isAtlasUrl, PROFILE_KEYS, DEFAULT_PROFILE, emptyProfile, withProfiles, storeProfile, switchProfile, renameProfile, deleteProfile, profileForLogin, LoginWatcher, LoadingWatcher, Counters, counterSize, inFrame, triggers, framesBounds, planImport, abilityFromSpell, upgradeAbility, displayName, FollowUps, FOLLOW_SIZES, CLOCK_SIZES, clockSize, GO_MS, isModifier, bindingFromPress, bindingLabel, keyName, matches, Cooldowns, overlaySize, lineParser, SIZES, GAP, PAD };
+module.exports = { counterLayout, ATLAS, ZONE_ALIASES, atlasMapForZone, atlasUrl, atlasView, isAtlasUrl, PROFILE_KEYS, DEFAULT_PROFILE, emptyProfile, withProfiles, storeProfile, switchProfile, renameProfile, deleteProfile, profileForLogin, LoginWatcher, LoadingWatcher, Counters, counterSize, inFrame, triggers, framesBounds, planImport, abilityFromSpell, upgradeAbility, displayName, withGameIcons, FollowUps, FOLLOW_SIZES, CLOCK_SIZES, clockSize, GO_MS, isModifier, bindingFromPress, bindingLabel, keyName, matches, Cooldowns, overlaySize, lineParser, SIZES, GAP, PAD };

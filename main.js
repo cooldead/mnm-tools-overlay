@@ -755,7 +755,7 @@ function openSettings(openImport = false) {
   settingsWin.loadFile('renderer/settings.html', { query: { icons: pathToFileURL(ICONS_DIR).href } });
 }
 
-ipcMain.handle('catalog', () => catalogIcons());
+ipcMain.handle('catalog', () => [...gameIcons(), ...catalogIcons()]);
 
 ipcMain.handle('save-settings', (event, patch) => {
   const sizeChanged = ['abilities', 'layout', 'size'].some((k) => k in patch);
@@ -854,14 +854,61 @@ function loadSpells() {
   return user && (!bundled || user.generatedAt > bundled.generatedAt) ? user : bundled || { generatedAt: null, spells: [] };
 }
 
-ipcMain.handle('spells', () => loadSpells());
+// What the settings window and class import see: the spells with MnM Icon Creator's game icons swapped in.
+function spellsWithGameIcons() {
+  const data = loadSpells();
+  return { ...data, spells: core.withGameIcons(data.spells, gameIcons()) };
+}
+
+ipcMain.handle('spells', () => spellsWithGameIcons());
+
+// ---- Game icons from MnM Icon Creator ----
+// It saves them the way it fills the OpenDeck plugin: custom-icons/catalog.json plus icons/custom/<name>.png.
+// They show in the icon picker under "Custom" and replace the wiki icon on abilities of the same name.
+const gameIconsDir = () => path.join(app.getPath('userData'), 'custom-icons');
+
+function gameIcons() {
+  const catalog = readJson(path.join(gameIconsDir(), 'catalog.json'));
+  return (catalog?.icons || []).map((icon) => ({ ...icon, file: path.join(gameIconsDir(), 'icons', icon.file) }));
+}
+
+function applyGameIcons() {
+  const icons = gameIcons();
+  if (!icons.length) return;
+  let changed = false;
+  const update = (abilities = []) => {
+    const out = core.withGameIcons(abilities, icons);
+    if (out !== abilities) changed = true;
+    return out;
+  };
+  settings.abilities = update(settings.abilities);
+  for (const [name, profile] of Object.entries(settings.profiles || {})) {
+    if (name !== settings.profile) settings.profiles[name] = { ...profile, abilities: update(profile.abilities) };
+  }
+  if (!changed) return;
+  saveSettings();
+  refreshOverlay();
+  broadcast();
+}
+
+let gameIconsTimer = null;
+function watchGameIcons() {
+  applyGameIcons();
+  try {
+    fs.mkdirSync(gameIconsDir(), { recursive: true });
+    // The catalog is replaced through a temporary file, so watch the folder rather than the file.
+    fs.watch(gameIconsDir(), () => { clearTimeout(gameIconsTimer); gameIconsTimer = setTimeout(applyGameIcons, 500); });
+  } catch (error) {
+    console.error('Could not watch the game icons folder:', error.message);
+  }
+}
 
 // ---- Importing abilities for a class and level ----
 // Playable classes; anything else the wiki lists abilities for (Dwarf, Goblin, Halfling…) is a race.
 const CLASSES = wiki.CLASSES;
 
 ipcMain.handle('plan-import', (event, character) => {
-  const { spells, generatedAt } = loadSpells();
+  const { spells, generatedAt } = spellsWithGameIcons();
   const all = [...new Set(spells.flatMap((spell) => Object.keys(spell.classes)))].sort();
   const plan = character.cls ? core.planImport(spells, settings.abilities, { ...character, level: Number(character.level) || 1 }) : null;
   return { plan, generatedAt, classes: CLASSES.filter((c) => all.includes(c)), races: all.filter((c) => !CLASSES.includes(c)) };
@@ -870,7 +917,7 @@ ipcMain.handle('plan-import', (event, character) => {
 // Adds the chosen spells (by wiki page) and applies the chosen upgrades (by ability id), then returns the
 // new abilities list so the settings window can adopt it.
 ipcMain.handle('apply-import', (event, { add = [], upgrades = [] }) => {
-  const pages = new Map(loadSpells().spells.map((spell) => [spell.page, spell]));
+  const pages = new Map(spellsWithGameIcons().spells.map((spell) => [spell.page, spell]));
   const upgradeTo = new Map(upgrades.map((u) => [u.id, pages.get(u.page)]));
   const abilities = settings.abilities.map((a) => (upgradeTo.get(a.id) ? core.upgradeAbility(a, upgradeTo.get(a.id)) : a));
   for (const page of add) if (pages.has(page)) abilities.push(core.abilityFromSpell(pages.get(page), randomUUID()));
@@ -1412,6 +1459,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('window-all-closed', () => {});
   app.whenReady().then(() => {
     settings = loadSettings();
+    watchGameIcons();
     createOverlay();
     createFollowWindow();
     createCounterWindow();
